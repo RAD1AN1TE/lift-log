@@ -1,120 +1,87 @@
 /* ExerciseSelection.css */
 .container {
-    padding: 20px;
-    max-width: 600px;
-    margin: auto;
-    background-color: #1c1c1e;
-    color: #fff;
-    border-radius: 10px;
-  }
-  
-  .container h3 {
-    text-align: center;
-  }
-  
-  .search-bar {
-    width: calc(100% - 20px); /* Adjust width to fit better */
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 5px;
-    border: 1px solid #444;
-    background-color: #333;
-    color: #fff;
-    outline: none;
-  }
+  padding: 20px;
+  max-width: 600px;
+  margin: auto;
+  background-color: #1c1c1e;
+  color: #fff;
+  border-radius: 10px;
+}
 
-  .search-bar::placeholder {
-    color: #aaa;
-  }
+.container h3 {
+  text-align: center;
+  flex-grow: 1;
+  margin: 0;
+}
 
-  /* Ensure the category filter aligns properly next to the search bar */
-    .category-filter {
-        padding: 10px;
-        margin: 10px 0;
-        border-radius: 5px;
-        border: 1px solid #444;
-        background-color: #333;
-        color: #fff;
-        cursor: pointer;
-        margin-left: 10px;
-        display: inline-block;
-    }
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
 
-    .input-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
+.logout-button {
+  background-color: #ff4c4c;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
 
-  .exercise-list {
-    max-height: 300px; /* Adjust the height as needed */
-    overflow-y: auto; /* Enables vertical scrolling */
-    padding-right: 10px; /* Add some padding to avoid overlapping with the scroll bar */
-    margin: 10px 0;
-    border: 1px solid #444; /* Optional: Add a border for better visibility */
-    border-radius: 5px; /* Optional: Rounded corners */
-  }
-  
-  .exercise-item {
-    padding: 10px;
-    border-bottom: 1px solid #444;
-  }
-  
-  .exercise-item strong {
-    display: block;
-  }
-  
-  .exercise-item small {
-    color: #aaa;
-  }
+.logout-button:hover {
+  background-color: #d43d3d;
+}
 
-  /* Add Exercise */
-.add-exercise-section {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-  }
-  
-  .input-field {
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #444;
-    background-color: #333;
-    color: #fff;
-    flex: 1;
-  }
-  
-  .add-exercise-button {
-    padding: 10px;
-    background-color: #00aaff;
-    color: #fff;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-  }
+.search-bar {
+  width: calc(100% - 20px); /* Adjust width to fit better */
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 1px solid #444;
+  background-color: #333;
+  color: #fff;
+  outline: none;
+}
 
-  .exercise-item {
-    display: flex;
-    justify-content: space-between; /* Space between the exercise details and the delete button */
-    align-items: center; /* Align items vertically in the center */
-    padding: 10px;
-    border-bottom: 1px solid #444;
-  }
-  
-  .exercise-item strong {
-    display: block;
-  }
-  
-  .exercise-item small {
-    color: #aaa;
-  }
-  
-  /* Delete button */
-/* ExerciseSelection.css */
+.search-bar::placeholder {
+  color: #aaa;
+}
+
+/* Ensure the category filter aligns properly next to the search bar */
+.category-filter {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 1px solid #444;
+  background-color: #333;
+  color: #fff;
+  cursor: pointer;
+  margin-left: 10px;
+  display: inline-block;
+}
+
+.input-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.exercise-list {
+  max-height: 300px; /* Adjust the height as needed */
+  overflow-y: auto; /* Enables vertical scrolling */
+  padding-right: 10px; /* Add some padding to avoid overlapping with the scroll bar */
+  margin: 10px 0;
+  border: 1px solid #444; /* Optional: Add a border for better visibility */
+  border-radius: 5px; /* Optional: Rounded corners */
+}
+
 .exercise-item {
   display: flex;
-  justify-content: space-between; /* Space between the main container and the delete button */
-  align-items: center;
+  justify-content: space-between; /* Space between the exercise details and the delete button */
+  align-items: center; /* Align items vertically in the center */
   padding: 10px;
   border-bottom: 1px solid #444;
 }
@@ -135,6 +102,7 @@
   color: #aaa;
 }
 
+/* Delete button */
 .delete-button {
   padding: 5px 10px;
   background-color: #ff4c4c;
@@ -149,18 +117,39 @@
   background-color: #e04444;
 }
 
+.add-exercise-section {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.input-field {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #444;
+  background-color: #333;
+  color: #fff;
+  flex: 1;
+}
+
+.add-exercise-button {
+  padding: 10px;
+  background-color: #00aaff;
+  color: #fff;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
 .reset-button {
-    padding: 10px;
-    background-color: #ff0000;
-    color: #fff;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    display: block;
-  }
-  
-  .reset-button:hover {
-    background-color: #cc0000;
-  }
+  padding: 10px;
+  background-color: #ff0000;
+  color: #fff;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
 
-
+.reset-button:hover {
+  background-color: #cc0000;
+}
