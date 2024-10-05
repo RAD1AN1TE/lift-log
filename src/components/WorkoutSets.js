@@ -1,24 +1,102 @@
-// EnhancedWorkoutSets.js
 import React, { useState, useEffect } from "react";
 import './WorkoutSets.css'; 
+import { doc, getDoc, updateDoc, deleteField } from "firebase/firestore"; // Firestore methods
+import { db } from "../firebase"; // Firebase configuration
 
-const WorkoutSets = ({ exerciseName, onBackToExercises }) => {
-    const [sets, setSets] = useState([]); // Start with an empty array for sets
+const WorkoutSets = ({ exerciseName, onBackToExercises, userId, onLogout }) => {
+  const [sets, setSets] = useState([]);
 
-    // This function will be used later to add a new set
-    const addSet = () => {
-        if (sets.length === 0 || (sets[sets.length - 1].isCompleted)) {
-          const newSet = {
-            past: { weight: "", reps: "" },
-            present: { weight: "", reps: "" },
-            isCompleted: false,
-          };
-          setSets([...sets, newSet]);
-        } else {
-          alert("Please fill in the weight and reps for the current set before adding a new one.");
-        }
+  // Function to sanitize exercise name for Firestore (replace spaces with underscores)
+  const sanitizeExerciseName = (name) => {
+    return name.replace(/\s+/g, "_").toLowerCase();
+  };
+
+  // Fetch saved sets from Firestore on component mount
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchSets = async () => {
+      const sanitizedExerciseName = sanitizeExerciseName(exerciseName); // Ensure valid Firestore path
+      const exerciseDocRef = doc(db, "Users", userId, "exercises", sanitizedExerciseName);
+      const exerciseDoc = await getDoc(exerciseDocRef);
+
+      if (exerciseDoc.exists()) {
+        const exerciseData = exerciseDoc.data();
+        const savedSets = Object.keys(exerciseData)
+          .filter(key => key.startsWith("set_"))
+          .map(key => ({
+            setNumber: key,
+            reps: exerciseData[key].reps,
+            weight: exerciseData[key].weight,
+            isCompleted: false, // Set isCompleted to false initially so fields are editable
+          }))
+          .sort((a, b) => { // Sort by set number
+            const setNumberA = parseInt(a.setNumber.split('_')[1]);
+            const setNumberB = parseInt(b.setNumber.split('_')[1]);
+            return setNumberA - setNumberB;
+          });
+
+        // Load past sets and initialize the present fields
+        setSets(savedSets.map(pastSet => ({
+          past: { reps: pastSet.reps, weight: pastSet.weight },
+          present: { reps: "", weight: "" },
+          isCompleted: pastSet.isCompleted // Allow modification if not completed
+        })));
+      }
+    };
+
+    fetchSets();
+  }, [exerciseName, userId]);
+
+  const addSet = () => {
+    if (sets.length === 0 || sets[sets.length - 1].isCompleted) {
+      const newSet = {
+        past: { weight: "", reps: "" },
+        present: { weight: "", reps: "" },
+        isCompleted: false,
       };
-      // Function to handle updating the present values of a set
+      setSets([...sets, newSet]);
+    } else {
+      alert("Please fill in the weight and reps for the current set before adding a new one.");
+    }
+  };
+
+  // Function to handle marking a set as completed and saving to Firestore
+  const markCompleted = async (index) => {
+    const currentSet = sets[index];
+
+    if (currentSet.present.weight && currentSet.present.reps) {
+      const updatedSets = sets.map((set, idx) =>
+        idx === index
+          ? {
+              ...set,
+              past: set.present,
+              isCompleted: true, // Mark as completed after saving
+            }
+          : set
+      );
+      setSets(updatedSets);
+
+      try {
+        const sanitizedExerciseName = sanitizeExerciseName(exerciseName);
+        const exerciseDocRef = doc(db, "Users", userId, "exercises", sanitizedExerciseName);
+
+        // Update or add the set in Firestore
+        const newSetNumber = `set_${index + 1}`;
+        await updateDoc(exerciseDocRef, {
+          [newSetNumber]: {
+            reps: currentSet.present.reps,
+            weight: currentSet.present.weight,
+          },
+        });
+      } catch (error) {
+        console.error("Error saving set: ", error);
+      }
+    } else {
+      alert("Please make sure both weight and reps fields are filled to mark this set as completed.");
+    }
+  };
+
   const handleChange = (index, field, value) => {
     const updatedSets = sets.map((set, idx) =>
       idx === index
@@ -26,7 +104,7 @@ const WorkoutSets = ({ exerciseName, onBackToExercises }) => {
             ...set,
             present: {
               ...set.present,
-              [field]: value, // Update the specific field (weight or reps)
+              [field]: value,
             },
           }
         : set
@@ -34,66 +112,49 @@ const WorkoutSets = ({ exerciseName, onBackToExercises }) => {
     setSets(updatedSets);
   };
 
-    useEffect(() => {
-        const savedPastSets = JSON.parse(localStorage.getItem(exerciseName)) || [];
-        setSets(savedPastSets.map(pastSet => ({
-          past: pastSet, // Retrieve past values from the saved data
-          present: { weight: "", reps: "" },
-          isCompleted: false,
-        })));
-      }, [exerciseName]);
-    
-        // Function to handle marking a set as completed and updating the past data
-    const markCompleted = (index) => {
-        const currentSet = sets[index];
-
-        // Check if both fields are filled
-        if (currentSet.present.weight && currentSet.present.reps) {
-        const updatedSets = sets.map((set, idx) =>
-            idx === index
-            ? {
-                ...set,
-                past: set.present,
-                isCompleted: true,
-                }
-            : set
-        );
-        setSets(updatedSets);
-
-        // Save the updated sets to localStorage for future sessions
-        const pastSetsData = updatedSets.map(set => set.past);
-        localStorage.setItem(exerciseName, JSON.stringify(pastSetsData));
-        } else {
-        alert("Please make sure both weight and reps fields are filled to mark this set as completed.");
-        }
-    };
-
-    // Function to clear all stats for this exercise
-    const clearStats = () => {
+  const clearStats = async () => {
     if (window.confirm("Are you sure you want to clear all stats for this exercise?")) {
-        localStorage.removeItem(exerciseName); // Remove from localStorage
-        setSets([]); // Clear the state
-    }
-    };
+      try {
+        const sanitizedExerciseName = sanitizeExerciseName(exerciseName);
+        const exerciseDocRef = doc(db, "Users", userId, "exercises", sanitizedExerciseName);
   
-    return (
-      <div className="container" style={{ position: "relative" }}>
-        {/* Moved the "Back to Exercises" button here */}
-      <button onClick={onBackToExercises} className="back-button">
-        Back to Exercises
-      </button>
+        // Prepare the update object to delete all set fields
+        const updatedExercise = {};
+        sets.forEach((_, index) => {
+          updatedExercise[`set_${index + 1}`] = deleteField(); // Use deleteField()
+        });
+  
+        // Update Firestore to remove set fields
+        await updateDoc(exerciseDocRef, updatedExercise);
+        setSets([]); // Clear local state
+      } catch (error) {
+        console.error("Error clearing stats: ", error);
+      }
+    }
+  };
 
+  return (
+    <div className="container" style={{ position: "relative" }}>
+      <div className="header-container">
+        <button onClick={onBackToExercises} className="back-button">
+          Back
+        </button>
         <h3>{exerciseName}</h3>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Set</th>
-              <th>Previous</th>
-              <th>lbs</th>
-              <th>Reps</th>
-            </tr>
-          </thead>
-          <tbody>
+        <button onClick={onLogout} className="logout-button">
+          Logout
+        </button>
+      </div>
+
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Set</th>
+            <th>Previous</th>
+            <th>lbs</th>
+            <th>Reps</th>
+          </tr>
+        </thead>
+        <tbody>
           {sets.map((set, index) => (
             <tr key={index} className="row">
               <td>{index + 1}</td>
@@ -128,15 +189,15 @@ const WorkoutSets = ({ exerciseName, onBackToExercises }) => {
             </tr>
           ))}
         </tbody>
-        </table>
-        <button onClick={addSet} className="add-set-button">
+      </table>
+      <button onClick={addSet} className="add-set-button">
         Add Set
-        </button>
-        <button onClick={clearStats} className="clear-stats-button">
+      </button>
+      <button onClick={clearStats} className="clear-stats-button">
         Clear Stats
-        </button>
-      </div>
-    );
-  };
+      </button>
+    </div>
+  );
+};
 
 export default WorkoutSets;
