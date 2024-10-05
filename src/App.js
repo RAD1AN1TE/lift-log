@@ -22,9 +22,9 @@ function App() {
     }, []);
 
   // Function to handle when an exercise is selected
-  const handleSelectExercise = (exercise) => {
-    setSelectedExercise(exercise);
-  };
+  // const handleSelectExercise = (exercise) => {
+  //   setSelectedExercise(exercise);
+  // };
 
   // Function to handle returning back to the exercise selection list
   const handleBackToExercises = () => {
