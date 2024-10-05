@@ -17,4 +17,4 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_LIFT_LOG_A1FCE }}
           channelId: live
-          projectId: lift-log-a1fce
+          projectId: lift-log-pwa
